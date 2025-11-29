@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pakistan City Weather</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1f2937, #374151);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-lg bg-gray-900 shadow-2xl rounded-xl p-8 transition-all duration-300">
+
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-white mb-2">Pakistan City Weather</h1>
+            <p class="text-gray-400">Select a major city to see its current temperature.</p>
+        </header>
+
+        <div class="mb-8">
+            <label for="city-select" class="block text-sm font-medium text-gray-300 mb-2">Choose City:</label>
+
+            <select id="city-select"
+                class="w-full p-3 border border-gray-700 bg-gray-800 text-white rounded-lg focus:ring-sky-500 focus:border-sky-500 appearance-none cursor-pointer transition-colors duration-200 shadow-lg"
+                onchange="getWeather()">
+            </select>
+        </div>
+
+        <!-- WEATHER DISPLAY -->
+        <div id="weather-display"
+            class="bg-gray-800 rounded-xl p-6 text-center border-t-4 border-sky-500 shadow-inner">
+            <p class="text-gray-500 italic">Please select a city above to view the weather.</p>
+        </div>
+
+        <footer class="mt-8 text-center text-xs text-gray-500">
+            <p>Weather Data from OpenWeatherMap API.</p>
+        </footer>
+
+    </div>
+
+
+<script>
+    const apiKey = "51335cf9be482559f18aa83498098115";
+
+    // Major Pakistani cities
+    const cities = [
+        "Karachi",
+        "Lahore",
+        "Islamabad",
+        "Rawalpindi",
+        "Peshawar",
+        "Quetta",
+        "Faisalabad"
+    ];
+    
+
+    const citySelect = document.getElementById("city-select");
+    const weatherDisplay = document.getElementById("weather-display");
+
+    // Load cities into dropdown
+    function populateCities() {
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "--- Select a City ---";
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        citySelect.appendChild(defaultOption);
+
+        cities.forEach(city => {
+            const option = document.createElement("option");
+            option.value = city;
+            option.textContent = city;
+            citySelect.appendChild(option);
+        });
+    }
+
+    // Fetch API weather
+    async function getWeather() {
+        const city = citySelect.value;
+        if (!city) return;
+
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${city},PK&appid=${apiKey}&units=metric`;
+
+        weatherDisplay.innerHTML =
+            `<p class="text-gray-400 animate-pulse">Loading weather...</p>`;
+
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("City not found");
+            }
+
+            const data = await response.json();
+
+            const temp = data.main.temp;
+            const condition = data.weather[0].description;
+            const icon = data.weather[0].icon;
+
+            weatherDisplay.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <img src="https://openweathermap.org/img/wn/${icon}@2x.png"
+                    class="w-24 h-24 mb-4">
+
+                    <h2 class="text-4xl font-bold text-sky-400 mb-2">${city}</h2>
+
+                    <p class="text-6xl font-extrabold text-white mb-2">${temp}°C</p>
+
+                    <p class="text-lg font-medium text-gray-300 capitalize">
+                        Condition: ${condition}
+                    </p>
+                </div>
+            `;
+        } catch (error) {
+            weatherDisplay.innerHTML =
+                `<p class="text-red-400">Error: ${error.message}</p>`;
+        }
+    }
+
+    window.onload = populateCities;
+</script>
+
+</body>
+</html>
